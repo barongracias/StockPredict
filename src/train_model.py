@@ -32,7 +32,8 @@ logger = get_console_logger()
 # function to pass model name
 def choose_model(model: str) -> Callable:
     """
-    Returns model function given the model name
+    Returns model class given the model name.
+    Raises ValueError for unknown model names.
     """
     model_dict = {
         'lasso': Lasso,
@@ -40,7 +41,9 @@ def choose_model(model: str) -> Callable:
         'boost': XGBRegressor,
         'forest': RandomForestRegressor
     }
-    return model_dict.get(model, ValueError(f'Unknown model name: {model}'))
+    if model not in model_dict:
+        raise ValueError(f"Unknown model: '{model}'. Choose from: {list(model_dict.keys())}")
+    return model_dict[model]
 
 # function to train model
 def train(
