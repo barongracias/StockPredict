@@ -59,7 +59,7 @@ def download_from_yfinance(
     if file_path.exists():
         logger.info(f'File already exists: {file_path.name}')
     else:
-        logger.info(f'Downloading {tickers} from {start} to {end}')
+        logger.info(f'Saving {tickers} from {start} to {end}')
         full_df.to_parquet(file_path, index=False)
 
     return file_path

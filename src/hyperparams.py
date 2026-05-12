@@ -14,7 +14,7 @@ from sklearn.model_selection import TimeSeriesSplit
 from sklearn.metrics import mean_absolute_error
 
 # project imports
-from src.features_pipepline import preprocess_pipeline
+from src.features_pipeline import preprocess_pipeline
 from src.logger import get_console_logger
 
 logger = get_console_logger()

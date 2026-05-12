@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 import pandas as pd
 from sklearn.pipeline import Pipeline, make_pipeline

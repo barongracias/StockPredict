@@ -10,13 +10,13 @@ from comet_ml import Experiment
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import Lasso
 from sklearn.metrics import mean_absolute_error
-from sklearn.model_selection import train_test_split, learning_curve
+from sklearn.model_selection import learning_curve, TimeSeriesSplit
 from sklearn.pipeline import make_pipeline
 from xgboost import XGBRegressor
 from lightgbm import LGBMRegressor
 
 from src.preprocess import transform_features_targets
-from src.features_pipepline import preprocess_pipeline
+from src.features_pipeline import preprocess_pipeline
 from src.hyperparams import best_hyperparams
 from src.plot_model import ModelPlotter
 from src.paths import RESULTS_DIR, MODELS_DIR
@@ -55,12 +55,16 @@ def train(
     experiment.add_tag(f'{model}_tuned' if tune_hyperparams else model)
 
     model_func = choose_model(model)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, train_size=0.9, random_state=42)
 
+    # Time-series split: keep chronological order to avoid look-ahead bias.
+    split = int(len(X) * 0.9)
+    X_train, X_test = X.iloc[:split], X.iloc[split:]
+    y_train, y_test = y.iloc[:split], y.iloc[split:]
+
+    preprocess_hyperparams = {}
     if not tune_hyperparams:
         logger.info('Using default hyperparameters')
         pipeline = make_pipeline(preprocess_pipeline(), model_func())
-        preprocess_hyperparams = {}
     else:
         logger.info('Finding best hyperparameters using cross-validation')
         preprocess_hyperparams, model_hyperparams = best_hyperparams(
@@ -74,12 +78,13 @@ def train(
         )
 
     logger.info('Computing learning curve')
+    tss = TimeSeriesSplit(n_splits=5)
     train_sizes, train_scores, test_scores = learning_curve(
         make_pipeline(preprocess_pipeline(**preprocess_hyperparams), model_func()),
         X_train,
         y_train,
         train_sizes=np.linspace(0.1, 1.0, 10),
-        cv=5,
+        cv=tss,
         scoring='neg_mean_absolute_error',
         n_jobs=-1,
     )
