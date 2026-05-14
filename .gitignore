@@ -2,3 +2,4 @@ environment_variables.sh
 stock_venv/.DS_Store
 __pycache__/
 *.py[cod]
+.DS_Store
